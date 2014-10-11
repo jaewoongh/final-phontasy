@@ -1,0 +1,16 @@
+{
+  "name": "FinalPhontasy",
+  "version": "0.1.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jaewoong Hwang",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.9.6",
+    "forever": "^0.11.1",
+    "socket.io": "^1.1.0"
+  }
+}
