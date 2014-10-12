@@ -21,15 +21,15 @@ var app = express();
 var agi_net = require('./tinyphone/tinyphone_server/connectors/tinyphone_agi');
 var agi = new agi_net.TinyphoneAGI();
 agi.on('agi_event', function(message, caller) {
-	console.log('- AGI event:');
-	console.log('\tMessage: %s', message);
-	console.log('\tCaller: %s', caller);
+	console.log('- AGI event from ' + caller.callerNumber);
+	console.dir(message);
+	console.log('\n')
 });
 agi.start(AGI_HOST, AGI_PORT);
 
 // Routes
-var site = require('./site');
-var game = require('./game');
+var site = require('./routes_site');
+var game = require('./routes_game');
 
 app.get('/', site.cover);
 
@@ -39,5 +39,6 @@ app.get('/game/:gamename/halloffame', game.halloffame);
 // Listen!
 app.set('port', process.env.PORT || 8080);
 var server = app.listen(app.get('port'), function() {
-	console.log('\n== Start listening on port %d', app.get('port'));
+	console.log('Server listening for HTTP connection on port %d', app.get('port'));
+	console.log('\n');
 });
