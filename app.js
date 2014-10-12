@@ -1,3 +1,4 @@
+// Show fancy logo
 console.log(' __, _ _, _  _, _,    __, _,_  _, _, _ ___  _,  _, , _');
 console.log(' |_  | |\\ | /_\\ |     |_) |_| / \\ |\\ |  |  /_\\ (_  \\ |');
 console.log(' |   | | \\| | | | ,   |   | | \\ / | \\|  |  | | , )  \\|');
@@ -23,26 +24,20 @@ mongoose.connect('mongodb://localhost/test');
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, '- MongoDB connection error: '));
 db.once('open', function() { console.log('MongoDB successfully connected'); });
-var Hero = require('./models/hero')(mongoose);
 
 // Set up socket.io
 var io = require('socket.io')(server);
 io.on('connection', function(socket) {
-	socket.emit('greetings', { version: version });
+	socket.emit('greetings', { version: app.get('version') });
 });
 
 // Set up AGI connection
 var agi_net = require('./tinyphone/tinyphone_server/connectors/tinyphone_agi');
 var agi = new agi_net.TinyphoneAGI();
-agi.on('agi_event', function(message, caller) {
-	console.log('- AGI event from ' + caller.callerNumber);
-	console.dir(message);
-	io.emit('agi', { caller: caller.callerNumber, message: message });
-});
 agi.start(AGI_HOST, AGI_PORT);
 
 // Set up game
-var game = require('./libs/game')(app.get('gamename'));
+var game = require('./libs/game')(app.get('gamename'), io, agi, mongoose);
 
 // Set render engine
 var exphbs = require('express-handlebars');
@@ -61,6 +56,12 @@ app.get('/', routes.cover);
 app.get('/test', routes.test);
 
 // Query interfaces for Asterisk to get needed information easily
+app.get('/game/isfull', game.isFull);
+app.get('/hero/:num/isnoob', game.isNoob);
+app.get('/hero/:num/register', game.register);
+app.get('/hero/:num/intobattle', game.intoBattle);
+
+app.get('/game/isfull', function(req, res) { res.send(game.isFull()); });
 app.get('/hero/:num/isnoob', function(req, res) {
 	Hero.findOne({ number: req.params.num }, function(err, hero) {
 		res.send(hero == null);
@@ -80,8 +81,10 @@ app.get('/hero/:num/register', function(req, res) {
 		res.json(hero);
 	});
 });
-app.get('/game/isfull', function(req, res) {
-	res.send(game.isFull());
+app.get('/hero/:num/intobattle', function(req, res) {
+	Hero.findOne({ number: req.params.num }, function(err, hero) {
+		game.addPlayer(hero);
+	});
 });
 
 // Listen!

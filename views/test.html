@@ -1,5 +1,15 @@
-<p id="message">Call {number} and press numkeys to test<br /></p>
-
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Final Phontasy</title>
+	<link rel="stylesheet" href="/styles/stylesheet.css">
+	<script src="https://cdn.socket.io/socket.io-1.1.0.js"></script>
+</head>
+<body>
+	<p id="message">Call {number} and press numkeys to test<br /></p>
+</body>
 <script>
 	var socket = io.connect();
 	var message = document.getElementById('message');
@@ -12,17 +22,15 @@
 		console.log('                                                    ~\'');
 		console.log('Version ' + data.version);
 	});
-	socket.on('agi', function(data) {
-		switch (data.message.event) {
-			case 'new_call':
-				message.innerHTML += '<br />Got new call from ' + data.caller;
-				break;
-			case 'keypress':
-				message.innerHTML += '<br />Key ' + data.message.value + ' is pressed from ' + data.caller;
-				break;
-			case 'hangup':
-				message.innerHTML += '<br />User ' + data.caller + ' just hanged up'
-				break;
-		}
+
+	socket.on('new_call', function(data) {
+		message.innerHTML += '<br />Got new call from ' + data.caller;
+	});
+	socket.on('keypress', function(data) {
+		message.innerHTML += '<br />Key ' + data.value + ' is pressed from ' + data.caller;
+	});
+	socket.on('hangup', function(data) {
+		message.innerHTML += '<br />Player ' + data.caller + ' just hanged up'
 	});
 </script>
+</html>

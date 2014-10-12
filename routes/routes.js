@@ -5,5 +5,5 @@ exports.cover = function(req, res) {
 
 // Test page
 exports.test = function(req, res) {
-	res.render('test', { layout: 'game' });
+	res.render('test', { layout: false });
 };

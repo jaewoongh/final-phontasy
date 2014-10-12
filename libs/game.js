@@ -1,9 +1,15 @@
-module.exports = function(name) {
+module.exports = function(name, io, agi, mongoose) {
 	var gamename = name;
 	var max_players = 4;
 	var phase = 'waiting';
 	var players = [];
 
+	var io = io;
+	var agi = agi;
+	var Hero = require('../models/hero')(mongoose);
+
+
+	// Meta functions
 	var config = function(conf) {
 		conf = conf || {};
 		gamename = conf.gamename || gamename;
@@ -20,33 +26,71 @@ module.exports = function(name) {
 		}
 	};
 
-	var isFull = function() { return !(players.length < max_players); };
-	var getPlayers = function() { return players; };
 
-	var addPlayer = function(player) {
-		if (players.length >= max_players) return false;
-		players.push(player);
-		return true;
+	// Routes
+	var isFull = function(req, res) {
+		res.send(!(players.length < max_players));
 	};
 
-	var removePlayer = function(player) {
-
+	var isNoob = function(req, res) {
+		Hero.findOne({ number: req.params.num }, function(err, hero) {
+			if (err) return console.error(err);
+			res.send(hero == null);
+		});
 	};
 
-	var getPhase = function() { return phase; };
-	var setPhase = function(newPhase) { phase = newPhase; };
+	var register = function(req, res) {
+		var noob = new Hero({
+			number:			req.params.num,
+			name:			req.params.num.slice(-4),
+			class:			'tester',
+			level:			1,
+			dateAppeared:	new Date,
+			history:		[]
+		});
+		noob.save(function(err, hero) {
+			if (err) return console.error(err);
+			res.json(hero);
+		});
+	};
+
+	var intoBattle = function(req, res) {
+		Hero.findOne({ number: req.params.num }, function(err, hero) {
+			if (err) return console.error(err);
+			if (players.length >= max_players) res.send(false);
+			players.push(hero);
+			io.emit('join', hero);
+			res.send(true);
+		});
+	};
+
+
+	// AGI event
+	agi.on('agi_event', function(message, caller) {
+		switch (message.event) {
+			case 'new_call':
+				console.log('- AGI new_call from ' + caller.callerNumber);
+				io.emit('new_call', { caller: caller.callerNumber });
+				break;
+			case 'keypress':
+				console.log('- AGI keypress(' + message.value + ') from ' + caller.callerNumber);
+				io.emit('keypress', { caller: caller.callerNumber, value: message.value });
+				break;
+			case 'hangup':
+				console.log('- AGI hangup from ' + caller.callerNumber);
+				io.emit('hangup', { caller: caller.callerNumber });
+				break;
+		}
+	});
 
 
 	return {
 		config:			config,
 		info:			info,
 
-		getPlayers:		getPlayers,
 		isFull:			isFull,
-		addPlayer:		addPlayer,
-		removePlayer:	removePlayer,
-
-		getPhase:		getPhase,
-		setPhase:		setPhase
+		isNoob:			isNoob,
+		register:		register,
+		intoBattle:		intoBattle
 	}
 };
