@@ -1,4 +1,6 @@
 {
+	"version":		"Under Development",
+	"gamename":		"Midterm Fantasy",
 	"agi_host":		"127.0.0.1",
 	"agi_port":		12001
 }
