@@ -1,5 +1,6 @@
 
 // Cover page
 exports.cover = function(req, res) {
-	res.send('This is a cover page.');
+	res.sendFile(__dirname + '/views/cover.html');
+	res.render('cover', { version: version });
 };
