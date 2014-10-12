@@ -18,9 +18,6 @@ var server = require('http').Server(app);
 var io = require('socket.io')(server);
 io.on('connection', function(socket) {
 	socket.emit('greetings', { version: version });
-	socket.on('gameover', function(data) {
-
-	});
 });
 
 // Set up AGI connection
@@ -30,6 +27,7 @@ agi.on('agi_event', function(message, caller) {
 	console.log('- AGI event from ' + caller.callerNumber);
 	console.dir(message);
 	console.log('\n')
+	io.emit('agi', { caller: caller.callerNumber, message: message });
 });
 agi.start(AGI_HOST, AGI_PORT);
 
@@ -47,6 +45,7 @@ var path = require('path');
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', function(req, res) { res.render('cover', { version: version }); });
+app.get('/test', function(req, res) { res.render('test', { layout: 'game' }); });
 // app.get('/game/:gamename/play', game.play);
 // app.get('/game/:gamename/halloffame', game.halloffame);
 

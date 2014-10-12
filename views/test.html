@@ -1,0 +1,28 @@
+<p id="message">Call {number} and press numkeys to test<br /></p>
+
+<script>
+	var socket = io.connect();
+	var message = document.getElementById('message');
+	socket.on('greetings', function(data) {
+		data.version = data.version || 'UNKNOWN';
+		console.log(' __, _ _, _  _, _,    __, _,_  _, _, _ ___  _,  _, , _');
+		console.log(' |_  | |\\ | /_\\ |     |_) |_| / \\ |\\ |  |  /_\\ (_  \\ |');
+		console.log(' |   | | \\| | | | ,   |   | | \\ / | \\|  |  | | , )  \\|');
+		console.log(' ~   ~ ~  ~ ~ ~ ~~~   ~   ~ ~  ~  ~  ~  ~  ~ ~  ~    )');
+		console.log('                                                    ~\'');
+		console.log('Version ' + data.version);
+	});
+	socket.on('agi', function(data) {
+		switch (data.message.event) {
+			case 'new_call':
+				message.innerHTML += '<br />Got new call from ' + data.caller;
+				break;
+			case 'keypress':
+				message.innerHTML += '<br />Key ' + data.message.value + ' is pressed from ' + data.caller;
+				break;
+			case 'hangup':
+				message.innerHTML += '<br />User ' + data.caller + ' just hanged up'
+				break;
+		}
+	});
+</script>
