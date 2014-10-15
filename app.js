@@ -55,6 +55,7 @@ var routes = require('./routes/routes');
 app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', routes.cover);
 app.get('/test', routes.test);
+app.get('/game', routes.game);
 
 // REST API for Asterisk to get needed information easily using curl
 app.get('/game/isfull', game.isFull);

@@ -7,3 +7,8 @@ exports.cover = function(req, res) {
 exports.test = function(req, res) {
 	res.render('test', { layout: false });
 };
+
+// Game page
+exports.game = function(req, res) {
+	res.render('game', { layout: false });
+};
