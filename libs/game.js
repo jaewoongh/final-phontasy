@@ -7,6 +7,7 @@ module.exports = function(name, io, agi, mongoose) {
 	var io = io;
 	var agi = agi;
 	var Hero = require('../models/hero')(mongoose);
+	var classes = require('./classes');
 
 
 	// Meta functions
@@ -59,9 +60,36 @@ module.exports = function(name, io, agi, mongoose) {
 			if (err) return console.error(err);
 			if (players.length >= max_players) res.send(false);
 			players.push(hero);
-			io.emit('join', hero);
+			console.log('New hero joined the battle (' + hero.number + ') => NUM_PLAYERS ' + players.length);
+			io.emit('join', getHeroData(hero));
 			res.send(true);
 		});
+	};
+
+
+	// Event from client
+	var outtaBattle = function(data) {
+		for (var i = players.length - 1; i >= 0; i--) {
+			if (players[i].number != data.number) continue;
+			players.splice(i, 1);
+			console.log('A hero ' + data.number + ' kicked out of the battle (' + data.reason + ') => NUM_PLAYERS ' + players.length);
+		}
+	};
+
+
+	// Actual hero stats for individual
+	var getHeroData = function(hero) {
+		var classData = classes[hero.class];
+
+		return {
+			number:			hero.number,
+			name:			hero.name,
+			class:			hero.class,
+			level:			hero.level,
+			hp_max:			eval(classData['hp_max'].replace(/lv/g, hero.level)),
+			sp_max:			eval(classData['sp_max'].replace(/lv/g, hero.level)),
+			skills:			classData.skills
+		}
 	};
 
 
@@ -91,6 +119,7 @@ module.exports = function(name, io, agi, mongoose) {
 		isFull:			isFull,
 		isNoob:			isNoob,
 		register:		register,
-		intoBattle:		intoBattle
+		intoBattle:		intoBattle,
+		outtaBattle:	outtaBattle
 	}
 };

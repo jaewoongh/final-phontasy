@@ -29,6 +29,7 @@ db.once('open', function() { console.log('MongoDB successfully connected'); });
 var io = require('socket.io')(server);
 io.on('connection', function(socket) {
 	socket.emit('greetings', { version: app.get('version') });
+	socket.on('outtaBattle', game.outtaBattle);
 });
 
 // Set up AGI connection

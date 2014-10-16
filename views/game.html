@@ -8,6 +8,34 @@
 	<link rel="stylesheet" href="/styles/game.css">
 	<script src="http://code.createjs.com/easeljs-0.7.1.min.js"></script>
 	<script src="/scripts/assetfactory.js"></script>
+	<script src="/scripts/hero.js"></script>
+	<script src="/scripts/boss.js"></script>
 	<script src="/scripts/game.js"></script>
+	<script src="https://cdn.socket.io/socket.io-1.1.0.js"></script>
+	<script>
+		var game;
+		var socket = io.connect();
+		socket.on('greetings', function(data) {
+			data.version = data.version || 'UNKNOWN';
+			console.log(' __, _ _, _  _, _,    __, _,_  _, _, _ ___  _,  _, , _');
+			console.log(' |_  | |\\ | /_\\ |     |_) |_| / \\ |\\ |  |  /_\\ (_  \\ |');
+			console.log(' |   | | \\| | | | ,   |   | | \\ / | \\|  |  | | , )  \\|');
+			console.log(' ~   ~ ~  ~ ~ ~ ~~~   ~   ~ ~  ~  ~  ~  ~  ~ ~  ~    )');
+			console.log('                                                    ~\'');
+			console.log('Version ' + data.version);
+		});
+
+		window.onload = function() {
+			game = new Game();
+
+			// Bind AGI events
+			socket.on('new_call', game.onNewcall.bind(game));
+			socket.on('keypress', game.onKeypress.bind(game));
+			socket.on('hangup', game.onHangup.bind(game));
+
+			// Bind server side game events
+			socket.on('join', game.onJoin.bind(game));
+		};
+	</script>
 </head>
 </html>
