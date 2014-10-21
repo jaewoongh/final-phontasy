@@ -1,7 +1,6 @@
 module.exports = function(name, io, agi, mongoose) {
 	var gamename = name;
 	var max_players = 4;
-	var phase = 'waiting';
 	var players = [];
 
 	var io = io;
@@ -15,16 +14,19 @@ module.exports = function(name, io, agi, mongoose) {
 		conf = conf || {};
 		gamename = conf.gamename || gamename;
 		max_players = conf.max_players || max_players;
-		phase = conf.phase || phase;
 	};
 
 	var info = function() {
 		return {
 			gamename:		gamename,
 			max_players:	max_players,
-			phase:			phase,
 			players:		players
 		}
+	};
+
+	var reset = function() {
+		console.log('Resetting game');
+		players = [];
 	};
 
 
@@ -76,6 +78,47 @@ module.exports = function(name, io, agi, mongoose) {
 		}
 	};
 
+	var won = function(data) {
+		console.log('Game won against ' + data.bossName);
+		console.dir(data.heroList);
+		for (var i = 0; i < data.heroList.length; i++) {
+			var n = i;
+			Hero.findOne({ number: data.heroList[n].number }, function(err, hero) {
+				if (err) return console.error(err);
+				hero.level++;
+				hero.history.push({
+					date:			new Date,
+					foughtAgainst:	data.bossName,
+					result:			'won'
+				});
+				hero.save(function(err, hero) {
+					if (err) return console.error(err);
+					console.log('Added history for ' + hero.number + ': game won');
+				});
+			});
+		}
+	};
+
+	var lost = function(data) {
+		console.log('Game lost against ' + data.bossName);
+		console.dir(data.heroList);
+		for (var i = 0; i < data.heroList.length; i++) {
+			var n = i;
+			Hero.findOne({ number: data.heroList[n].number }, function(err, hero) {
+				if (err) return console.error(err);
+				hero.history.push({
+					date:			new Date,
+					foughtAgainst:	data.bossName,
+					result:			'lost'
+				});
+				hero.save(function(err, hero) {
+					if (err) return console.error(err);
+					console.log('Added history for ' + hero.number + ': game lost');
+				});
+			});
+		}
+	};
+
 
 	// Actual hero stats for individual
 	var getHeroData = function(hero) {
@@ -88,6 +131,9 @@ module.exports = function(name, io, agi, mongoose) {
 			level:			hero.level,
 			hp_max:			eval(classData['hp_max'].replace(/lv/g, hero.level)),
 			sp_max:			eval(classData['sp_max'].replace(/lv/g, hero.level)),
+			att:			eval(classData['att'].replace(/lv/g, hero.level)),
+			def:			eval(classData['def'].replace(/lv/g, hero.level)),
+			spd:			eval(classData['spd'].replace(/lv/g, hero.level)),
 			skills:			classData.skills
 		}
 	};
@@ -115,11 +161,14 @@ module.exports = function(name, io, agi, mongoose) {
 	return {
 		config:			config,
 		info:			info,
+		reset:			reset,
 
 		isFull:			isFull,
 		isNoob:			isNoob,
 		register:		register,
 		intoBattle:		intoBattle,
-		outtaBattle:	outtaBattle
+		outtaBattle:	outtaBattle,
+		won:			won,
+		lost:			lost
 	}
 };
