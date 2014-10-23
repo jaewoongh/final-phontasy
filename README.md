@@ -6,4 +6,4 @@ Version 0.1.0 (October 21, 2014)
 This app makes use of [Tinyphone](https://github.com/itp-redial/tinyphone) for connecting Asterisk server and node server via AGI.
 
 ### Version History
-- 0.1.0		- Basic functionalities are done for midterm showcase
+- 0.1.0   - 10/21/2014		- Basic functionalities are done for midterm showcase
